@@ -6,29 +6,30 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: #f8fafc !important; }
-[data-testid="stAppViewContainer"] { background-color: #080d18; }
+[data-testid="stAppViewContainer"] { background-color: #0f172a; }
 [data-testid="stHeader"] { background-color: transparent; }
-h1,h2,h3,h4,h5,h6 { font-family: 'Outfit', sans-serif !important; letter-spacing: -0.5px; }
+h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif !important; letter-spacing: -0.5px; color: #f8fafc !important; }
 .stNumberInput input {
-    border-radius: 8px !important; background-color: #131929 !important;
+    border-radius: 8px !important; background-color: #1e293b !important;
     border: 1px solid rgba(255,255,255,0.08) !important; color: #f8fafc !important;
     transition: all 0.2s ease;
 }
 .stNumberInput input:focus { border-color: #8b5cf6 !important; box-shadow: 0 0 0 2px rgba(139,92,246,0.25) !important; }
-.stNumberInput label { color: #94a3b8 !important; font-size: 0.82rem !important; font-weight: 500 !important; }
+.stNumberInput label, [data-testid="stWidgetLabel"] p { color: #94a3b8 !important; font-size: 0.82rem !important; font-weight: 500 !important; }
 [data-testid="stMetric"] {
-    background: #131929; border: 1px solid rgba(255,255,255,0.06);
+    background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
     padding: 14px 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 [data-testid="stMetric"]:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-[data-testid="stMetricLabel"] { font-weight: 600 !important; color: #64748b !important; font-size: 0.78rem !important; text-transform: uppercase; letter-spacing: 0.6px; }
-[data-testid="stMetricValue"] { font-family: 'Outfit', sans-serif !important; font-weight: 700 !important; font-size: 1.5rem !important; }
-[data-testid="stMetricDelta"] { font-size: 0.78rem !important; }
-.stButton > button { border-radius: 8px !important; font-weight: 600 !important; transition: all 0.2s ease !important; }
-.streamlit-expanderHeader { font-weight: 600 !important; color: #94a3b8 !important; }
+[data-testid="stMetricLabel"] p { font-weight: 600 !important; color: #64748b !important; font-size: 0.78rem !important; text-transform: uppercase; letter-spacing: 0.6px; }
+[data-testid="stMetricValue"] div { font-family: 'Outfit', sans-serif !important; font-weight: 700 !important; font-size: 1.5rem !important; color: #f8fafc !important; }
+[data-testid="stMetricDelta"] div { font-size: 0.78rem !important; }
+.stButton > button { border-radius: 8px !important; font-weight: 600 !important; transition: all 0.2s ease !important; color: #f8fafc !important; }
+.streamlit-expanderHeader p { font-weight: 600 !important; color: #94a3b8 !important; }
 .stProgress > div > div { border-radius: 6px !important; }
-[data-testid="stSidebar"] { background-color: #0d1322 !important; }
+[data-testid="stSidebar"] { background-color: #0b1120 !important; }
+[data-testid="stToolbar"] { display: none !important; }
 hr { border-color: rgba(255,255,255,0.05) !important; margin: 16px 0 !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -180,7 +181,7 @@ if st.session_state.get("_clear_requested"):
 
 
 # ── Header ────────────────────────────────────────────────────────────────────
-hcol1, hcol2 = st.columns([5, 1])
+hcol1, hc_clear, hc_cache = st.columns([4.4, 0.8, 0.8])
 with hcol1:
     st.markdown("<h1 style='margin-bottom:2px'>💼 Salary Calculator Pro</h1>", unsafe_allow_html=True)
     st.markdown("""
@@ -188,10 +189,16 @@ with hcol1:
         New Tax Regime · FY 2025-26 / FY 2026-27 (identical slabs) · 
         Rebate u/s 87A · Marginal relief on tax &amp; surcharge · Cess 4%
     </p>""", unsafe_allow_html=True)
-with hcol2:
+with hc_clear:
     st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
     if st.button("🗑️ Clear All", use_container_width=True, help="Reset all fields to zero"):
         st.session_state["_clear_requested"] = True
+        st.rerun()
+with hc_cache:
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+    if st.button("🔄 Clear Cache", use_container_width=True, help="Clear Streamlit cache"):
+        st.cache_data.clear()
+        st.cache_resource.clear()
         st.rerun()
 
 st.markdown("---")
