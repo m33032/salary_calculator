@@ -271,25 +271,7 @@ total_taxable = taxable_fixed + variable_annual + rsu_annual_inr
 t_fixed = full_tax(taxable_fixed)
 t_total = full_tax(total_taxable)
 
-# Apply the effective surcharge rate of the total income to the fixed tax.
-# This ensures the fixed salary bears its proportional share of the higher surcharge bracket
-# triggered by variable/RSU income, giving a more accurate "average" monthly in-hand.
-if t_total["tax_after_rebate"] > 0:
-    eff_sc_rate = t_total["surcharge"] / t_total["tax_after_rebate"]
-else:
-    eff_sc_rate = 0.0
-
-tax_fixed_base = t_fixed["tax_after_rebate"]
-tax_fixed_sc = tax_fixed_base * eff_sc_rate
-tax_fixed_cess = (tax_fixed_base + tax_fixed_sc) * 0.04
-tax_fixed = tax_fixed_base + tax_fixed_sc + tax_fixed_cess
-
-# Update t_fixed dict so UI metrics reflect the adjusted values
-t_fixed["surcharge_rate"] = eff_sc_rate
-t_fixed["surcharge"] = tax_fixed_sc
-t_fixed["cess"] = tax_fixed_cess
-t_fixed["total"] = tax_fixed
-
+tax_fixed = t_fixed["total"]
 tax_total = t_total["total"]
 
 tax_on_var_rsu = max(0.0, tax_total - tax_fixed)
@@ -366,14 +348,6 @@ with col2:
         st.success(f"✅ Rebate u/s 87A applied: {fmt(t_total['rebate_87a'])}", icon=None)
     if t_total["surcharge_relief"] > 0:
         st.info(f"🛡️ Marginal relief on surcharge: {fmt(t_total['surcharge_relief'])}", icon=None)
-        st.markdown(f"""
-        <div style="background-color:rgba(56,189,248,0.1); border-left:3px solid #38bdf8; padding:10px 14px; border-radius:4px; font-size:0.85rem; color:#bae6fd; margin-bottom:14px; margin-top:4px;">
-            <b>💡 Why is my in-hand salary flat?</b><br>
-            When you cross a surcharge threshold (like ₹50L or ₹1 Cr), marginal relief caps your tax jump. 
-            However, it does this by taking <b>exactly 100%</b> of your extra income as tax for a short "flat zone" (e.g., up to ~₹1.02 Cr). 
-            Your in-hand salary won't increase until your income clears this zone. This is standard Indian tax law!
-        </div>
-        """, unsafe_allow_html=True)
     if t_total["surcharge"] > 0:
         st.warning(f"⚠️ Surcharge ({int(t_total['surcharge_rate']*100)}%): {fmt(t_total['surcharge'])}", icon=None)
 
