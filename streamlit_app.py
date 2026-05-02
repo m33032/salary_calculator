@@ -461,3 +461,6 @@ with b2:
                 """, unsafe_allow_html=True)
         else:
             st.info("Enter salary details to see deduction summary.")
+
+st.markdown("---")
+st.markdown("<p style='text-align: center; color: #64748b; font-size: 0.8rem;'>Disclaimer: This India tax calculator is for informational purposes only. It does not constitute professional financial or legal advice. The creator assumes no liability for its accuracy.</p>", unsafe_allow_html=True)
