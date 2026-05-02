@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTC Optimizer Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: #151b2b;
+            --surface-highlight: #1e2638;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --primary-color: #8b5cf6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --glass-bg: rgba(21, 27, 43, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.5);
+            --glow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.08), transparent 25%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            line-height: 1.5;
+        }
+
+        h1,
+        h2,
+        h3,
+        .big-number {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .main-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+            align-items: flex-start;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Input Section */
+        .input-panel {
+            flex: 2;
+            background: var(--surface-color);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            min-width: 320px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Ambient glow effect inside input panel */
+        .input-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .header-content {
+            margin-bottom: 40px;
+        }
+
+        .header-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-content p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Results Section (Sticky) */
+        .result-panel {
+            flex: 1;
+            background: rgba(30, 38, 56, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 40px 30px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            min-width: 320px;
+            position: sticky;
+            top: 40px;
+        }
+
+        .section-header {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--primary-color);
+            margin: 30px 0 20px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+            margin-left: 15px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .form-group:hover {
+            transform: translateY(-2px);
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .form-group:focus-within label {
+            color: var(--primary-color);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-prefix {
+            position: absolute;
+            left: 16px;
+            color: var(--text-muted);
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px 14px 35px;
+            background: var(--surface-highlight);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-group input:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+            background: rgba(30, 38, 56, 0.8);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--surface-color);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .btn-calculate {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-top: 40px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-calculate::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -10px rgba(99, 102, 241, 0.7);
+        }
+
+        .btn-calculate:hover::after {
+            opacity: 1;
+        }
+
+        .btn-calculate:active {
+            transform: translateY(1px);
+        }
+
+        /* Result Panel Specifics */
+        .result-panel h2 {
+            color: var(--text-main);
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 1rem;
+            color: var(--text-muted);
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+        }
+
+        .result-row:hover {
+            color: var(--text-main);
+            transform: translateX(5px);
+        }
+
+        .result-row span:last-child {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .result-row.total {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            border-bottom: none;
+            color: var(--text-main);
+        }
+
+        .result-row.total span:first-child {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .result-row.total span:last-child {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--success-color);
+        }
+
+        .take-home-card {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 25px 20px;
+            text-align: center;
+            margin-bottom: 35px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .take-home-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+            animation: pulse 4s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 0.5;
+            }
+        }
+
+        .big-label {
+            position: relative;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--success-color);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .big-number {
+            position: relative;
+            font-size: 3rem;
+            font-weight: 700;
+            color: #34d399;
+            text-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+            letter-spacing: -1px;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .badge::before {
+            content: '•';
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            line-height: 0;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .main-wrapper {
+                flex-direction: column;
+            }
+
+            .result-panel {
+                position: static;
+                width: auto;
+                order: -1;
+                margin-bottom: 10px;
+            }
+
+            body {
+                padding: 20px 15px;
+            }
+
+            .input-panel {
+                padding: 25px;
+            }
+
+            .header-content h1 {
+                font-size: 2rem;
+            }
+
+            .big-number {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-wrapper">
+        <div class="input-panel">
+            <div class="header-content">
+                <h1>Salary Calculator Pro</h1>
+                <p>Enter your monthly details as per your offer letter. Tax is calculated based on FY 2025-26 (New
+                    Regime).</p>
+            </div>
+
+            <form id="salaryForm">
+                <div class="section-header">Earnings (Monthly)</div>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label>Basic Salary</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">₹</span>
+                            <input type="number" name="basic" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>HRA</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">₹</span>
+                            <input type="number" name="hra" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Special Allowance</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">₹</span>
+                            <input type="number" name="special" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>PF (Employer)</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">₹</span>
+                            <input type="number" name="pf_employer" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-header">Allowances & Others (Monthly)</div>
+                <div class="input-grid">
+                    <div class="form-group"><label>Conveyance</label>
+                        <div class="input-wrapper"><span class="input-prefix">₹</span><input type="number"
+                                name="conveyance" value="0"></div>
+                    </div>
+                    <div class="form-group"><label>Medical</label>
+                        <div class="input-wrapper"><span class="input-prefix">₹</span><input type="number"
+                                name="medical" value="0"></div>
+                    </div>
+                    <div class="form-group"><label>Telephone</label>
+                        <div class="input-wrapper"><span class="input-prefix">₹</span><input type="number"
+                                name="telephone" value="0"></div>
+                    </div>
+                    <div class="form-group"><label>LTA</label>
+                        <div class="input-wrapper"><span class="input-prefix">₹</span><input type="number" name="lta"
+                                value="0"></div>
+                    </div>
+                    <div class="form-group"><label>Meal Vouchers</label>
+                        <div class="input-wrapper"><span class="input-prefix">₹</span><input type="number" name="meal"
+                                value="0"></div>
+                    </div>
+                    <div class="form-group"><label>Education</label>
+                        <div class="input-wrapper"><span class="input-prefix">₹</span><input type="number"
+                                name="education" value="0"></div>
+                    </div>
+                    <div class="form-group"><label>Car / Petrol</label>
+                        <div class="input-wrapper"><span class="input-prefix">₹</span><input type="number" name="car"
+                                value="0"></div>
+                    </div>
+                    <div class="form-group"><label>Other</label>
+                        <div class="input-wrapper"><span class="input-prefix">₹</span><input type="number" name="other"
+                                value="0"></div>
+                    </div>
+                    <div class="form-group"><label>Gratuity (if in CTC)</label>
+                        <div class="input-wrapper"><span class="input-prefix">₹</span><input type="number"
+                                name="gratuity" value="0"></div>
+                    </div>
+                </div>
+
+                <div class="section-header">Variable & Equity (Annual)</div>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label>Annual Performance Bonus</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">₹</span>
+                            <input type="number" name="variable" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Annual RSU Value</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">$</span>
+                            <input type="number" name="rsu" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>USD/INR Rate</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">₹</span>
+                            <input type="number" name="usd_inr_rate" value="90">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-calculate" onclick="calculate()">
+                    Optimize Details ✨
+                </button>
+            </form>
+        </div>
+
+        <div class="result-panel">
+            <div class="take-home-card">
+                <div class="big-label">Monthly In-Hand (Fixed)</div>
+                <div class="big-number" id="monthly_take_home">₹ 0</div>
+            </div>
+
+            <h2>Breakdown Summary</h2>
+
+            <div class="result-row">
+                <span>Fixed CTC (Annual)</span>
+                <span id="annual_ctc">₹ 0</span>
+            </div>
+            <div class="result-row">
+                <span>Total CTC (Inc. Var)</span>
+                <span id="total_ctc">₹ 0</span>
+            </div>
+
+            <div class="result-row" style="margin-top: 15px;">
+                <span>Annual PF (Both)</span>
+                <span id="pf_total">₹ 0</span>
+            </div>
+            <div class="result-row">
+                <span>Income Tax (Fixed)</span>
+                <span id="tax_fixed" style="color: var(--danger-color);">₹ 0</span>
+            </div>
+
+            <div class="result-row total">
+                <span>Annual In-Hand (Fixed)</span>
+                <span id="annual_take_home">₹ 0</span>
+            </div>
+
+            <div class="result-row" style="margin-top: 15px;">
+                <span>Variable In-Hand (Net)</span>
+                <span id="var_in_hand">₹ 0</span>
+            </div>
+            <div class="result-row">
+                <span>RSU in hand (Net)</span>
+                <span id="rsu_in_hand">₹ 0</span>
+            </div>
+
+            <div class="result-row total" style="border-top-color: var(--primary-color);">
+                <span style="color: var(--text-main);">Total Annual Net Pay</span>
+                <span id="total_net_pay" style="color: var(--primary-color); font-size: 1.5rem;">₹ 0</span>
+            </div>
+
+            <div class="badge">
+                Tax Regime: FY 2025-26 (New)
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animate numbers on update
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const current = Math.floor(progress * (end - start) + start);
+                obj.innerHTML = "₹ " + current.toLocaleString('en-IN');
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    obj.innerHTML = "₹ " + end.toLocaleString('en-IN');
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Keep track of old values for animation
+        const state = {
+            monthly_take_home: 0,
+            annual_ctc: 0,
+            total_ctc: 0,
+            pf_total: 0,
+            tax_fixed: 0,
+            annual_take_home: 0,
+            var_in_hand: 0,
+            rsu_in_hand: 0,
+            total_net_pay: 0
+        };
+
+        function updateField(id, key, rawValue) {
+            const newValue = Math.round(rawValue);
+            const el = document.getElementById(id);
+            const oldValue = state[key];
+            state[key] = newValue;
+
+            if (oldValue !== newValue) {
+                animateValue(el, oldValue, newValue, 600);
+
+                // Add a brief highlight flash
+                el.parentElement.style.transform = 'scale(1.02)';
+                el.style.color = 'var(--primary-color)';
+                setTimeout(() => {
+                    el.parentElement.style.transform = 'translateX(0)';
+                    if (id !== 'total_net_pay' && id !== 'monthly_take_home') {
+                        el.style.color = id === 'tax_fixed' ? 'var(--danger-color)' : 'var(--text-main)';
+                    } else if (id === 'monthly_take_home') {
+                        el.style.color = '#34d399';
+                    }
+                }, 300);
+            } else {
+                el.innerText = "₹ " + Math.round(newValue).toLocaleString('en-IN');
+            }
+        }
+
+        async function calculate() {
+            const btn = document.querySelector('.btn-calculate');
+            btn.innerHTML = 'Calculating...';
+            btn.style.opacity = '0.8';
+
+            const inputs = document.querySelectorAll('#salaryForm input');
+            const data = {};
+            inputs.forEach(input => {
+                data[input.name] = input.value;
+            });
+
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                updateField('monthly_take_home', 'monthly_take_home', result.results.monthly_take_home_fixed);
+                updateField('annual_ctc', 'annual_ctc', result.fixed_ctc_annual);
+                updateField('total_ctc', 'total_ctc', result.total_ctc);
+
+                const pf_total = result.deductions.pf_employer + result.deductions.pf_employee;
+                updateField('pf_total', 'pf_total', pf_total);
+                updateField('tax_fixed', 'tax_fixed', result.deductions.tax);
+
+                updateField('annual_take_home', 'annual_take_home', result.results.annual_take_home_fixed);
+                updateField('var_in_hand', 'var_in_hand', result.results.variable_in_hand);
+                updateField('rsu_in_hand', 'rsu_in_hand', result.results.rsu_in_hand);
+                updateField('total_net_pay', 'total_net_pay', result.results.total_annual_take_home);
+
+            } catch (error) {
+                console.error("Error:", error);
+                // Ignore fetch errors during design editing or if backend isn't up
+            } finally {
+                setTimeout(() => {
+                    btn.innerHTML = 'Optimize Details ✨';
+                    btn.style.opacity = '1';
+                }, 400);
+            }
+        }
+
+        // Auto-calculate on load
+        window.onload = () => {
+            calculate();
+            // Add listeners to input for real-time validation visual cues
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => {
+                    input.style.borderColor = 'var(--primary-color)';
+                    setTimeout(() => input.style.borderColor = '', 500);
+                });
+            });
+        };
+    </script>
+
+</body>
+
+</html>
