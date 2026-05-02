@@ -1,4 +1,7 @@
 import streamlit as st
+import base64
+import json
+import zlib
 
 st.set_page_config(page_title="Salary Calculator Pro", layout="wide", initial_sidebar_state="collapsed", page_icon="💼")
 
@@ -159,8 +162,33 @@ FIELDS = ["basic","hra","special","pf_employer","conveyance","lta","car",
           "medical","meal","other","telephone","education","gratuity",
           "variable_annual","rsu_annual_usd","usd_inr_rate"]
 
+def decode_state(encoded_str):
+    try:
+        padding = 4 - (len(encoded_str) % 4)
+        if padding != 4: encoded_str += "=" * padding
+        compressed = base64.urlsafe_b64decode(encoded_str.encode('utf-8'))
+        return json.loads(zlib.decompress(compressed).decode('utf-8'))
+    except Exception:
+        return {}
+
+def encode_state(state_dict):
+    try:
+        json_str = json.dumps(state_dict, separators=(',', ':'))
+        compressed = zlib.compress(json_str.encode('utf-8'))
+        return base64.urlsafe_b64encode(compressed).decode('utf-8').rstrip("=")
+    except Exception:
+        return ""
+
+_decoded_state = {}
+if "s" in st.query_params:
+    _decoded_state = decode_state(st.query_params.get("s"))
+else:
+    for f in FIELDS:
+        if f in st.query_params:
+            _decoded_state[f] = st.query_params.get(f)
+
 def get_val(key, default=0.0):
-    v = st.query_params.get(key, default)
+    v = _decoded_state.get(key, default)
     try: return float(v)
     except: return default
 
@@ -176,7 +204,7 @@ if st.session_state.get("_clear_requested"):
     for f in FIELDS:
         default = 83.0 if f == "usd_inr_rate" else 0.0
         st.session_state[f] = default
-        st.query_params[f] = str(default)
+    st.query_params.clear()
     st.session_state["_clear_requested"] = False
 
 
@@ -250,8 +278,17 @@ with col1:
         usd_inr_rate    = st.number_input("USD/INR Rate (₹)",      min_value=1.0, value=get_val("usd_inr_rate", 83.0), step=0.5, key="usd_inr_rate",    format="%.2f")
 
 # Persist query params
+current_state = {}
 for key in FIELDS:
-    st.query_params[key] = str(st.session_state[key])
+    val = st.session_state.get(key)
+    if val is not None:
+        default_val = 83.0 if key == "usd_inr_rate" else 0.0
+        if val != default_val:
+            current_state[key] = val
+
+st.query_params.clear()
+if current_state:
+    st.query_params["s"] = encode_state(current_state)
 
 
 # ── Calculations ──────────────────────────────────────────────────────────────
